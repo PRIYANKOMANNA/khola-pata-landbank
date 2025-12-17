@@ -18,8 +18,13 @@
   --bg:#f4f6f3;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:Inter,sans-serif;background:var(--bg)}
+html,body{
+  margin:0;height:100%;
+  font-family:Inter,sans-serif;
+  background:var(--bg)
+}
 
+/* HEADER */
 header{
   padding:18px 22px;
   background:linear-gradient(90deg,var(--green),#3f8f5a);
@@ -28,8 +33,10 @@ header{
 .brand{font-family:"Baloo 2";font-size:26px}
 .sub{font-size:13px;opacity:.9}
 
+/* MAP */
 #map{height:calc(100vh - 76px)}
 
+/* SEARCH */
 .search-box{
   position:absolute;
   top:110px;
@@ -57,8 +64,10 @@ header{
   border-radius:12px;
   padding:10px 18px;
   font-weight:600;
+  cursor:pointer;
 }
 
+/* MOBILE SEARCH */
 @media(max-width:768px){
   .search-box{
     top:auto;
@@ -71,6 +80,7 @@ header{
   }
 }
 
+/* MODAL */
 .modal-bg{
   position:fixed;
   inset:0;
@@ -88,6 +98,7 @@ header{
   border-radius:18px;
 }
 .modal h3{margin-top:0}
+.modal p{font-size:14px;color:#444}
 .modal input{
   width:100%;
   padding:10px;
@@ -102,6 +113,7 @@ header{
   background:var(--green);
   color:#fff;
   font-weight:600;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -113,19 +125,22 @@ header{
   <div class="sub">West Bengal Rural Land Bank</div>
 </header>
 
+<!-- SEARCH -->
 <div class="search-box">
   <input id="pinInput" placeholder="Enter PIN code">
   <button onclick="openPin()">Explore</button>
 </div>
 
+<!-- MAP -->
 <div id="map"></div>
 
-<div id="loginModal" style="display:none"></div>
+<!-- MODAL HOLDER -->
+<div id="modalHolder" style="display:none"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// ========= LAND DATA =========
+// ================= LAND DATA =================
 const data = {
   "700001":[
     {title:"Premium Roadside Plot",lat:22.5586,lng:88.3621,price:"12 Lakh"},
@@ -139,26 +154,35 @@ const data = {
     {title:"Farm land near canal",lat:22.4182,lng:87.3284,price:"2 Lakh / acre"}
   ]
 };
-// =============================
+// =============================================
 
-// Map init
+// MAP INIT
 const map = L.map("map").setView([23.5,87.5],7);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 let markers=[];
 
+// ENTER KEY SUPPORT
+document.getElementById("pinInput").addEventListener("keyup", function(e){
+  if(e.key === "Enter"){ openPin(); }
+});
+
+// OPEN PIN
 function openPin(){
-  const pin=document.getElementById("pinInput").value.trim();
-  markers.forEach(m=>map.removeLayer(m));
-  markers=[];
+  map.invalidateSize();
+
+  const pin = document.getElementById("pinInput").value.trim();
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
 
   if(!data[pin]){
-    alert("No land listed for this PIN");
+    alert("এই PIN-এ এখনো কোনো জমি যোগ করা হয়নি");
     return;
   }
 
-  const bounds=[];
+  const bounds = [];
+
   data[pin].forEach(p=>{
-    const m=L.marker([p.lat,p.lng]).addTo(map);
+    const m = L.marker([p.lat,p.lng]).addTo(map);
     m.bindPopup(`
       <b>${p.title}</b><br>
       ₹ ${p.price}<br><br>
@@ -169,14 +193,16 @@ function openPin(){
   });
 
   setTimeout(()=>{
-    map.fitBounds(bounds,{padding:[50,50]});
+    map.fitBounds(bounds,{padding:[60,60]});
     map.invalidateSize();
   },200);
 }
 
+// LOGIN MODAL
 function openLogin(){
-  document.getElementById("loginModal").style.display="block";
-  document.getElementById("loginModal").innerHTML=`
+  const modal = document.getElementById("modalHolder");
+  modal.style.display="block";
+  modal.innerHTML=`
     <div class="modal-bg">
       <div class="modal">
         <h3>🔐 Login to Continue</h3>
@@ -184,22 +210,30 @@ function openLogin(){
         <input placeholder="OTP (demo: 1234)">
         <button onclick="confirmBooking()">Continue</button>
       </div>
-    </div>`;
+    </div>
+  `;
 }
 
+// BOOKING
 function confirmBooking(){
-  document.getElementById("loginModal").innerHTML=`
+  const modal = document.getElementById("modalHolder");
+  modal.innerHTML=`
     <div class="modal-bg">
       <div class="modal">
         <h3>✅ Booking Initiated</h3>
         <p>Booking amount: ₹2000</p>
+        <p>Our team will contact you shortly.</p>
         <button onclick="closeModal()">Done</button>
       </div>
-    </div>`;
+    </div>
+  `;
 }
 
+// CLOSE MODAL
 function closeModal(){
-  document.getElementById("loginModal").style.display="none";
+  const modal = document.getElementById("modalHolder");
+  modal.style.display="none";
+  modal.innerHTML="";
 }
 </script>
 
