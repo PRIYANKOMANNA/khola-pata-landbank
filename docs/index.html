@@ -2,248 +2,114 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Khola Pata | West Bengal Rural Land Bank</title>
+<title>Khola Pata | Rural Land Exchange</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Inter&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --green:#2f6f3e;
-  --earth:#8d6b3f;
-  --bg:#f4f6f3;
-}
+:root{--green:#2e7d32;--bg:#f7f7f4}
 *{box-sizing:border-box}
-html,body{
-  margin:0;height:100%;
-  font-family:Inter,sans-serif;
-  background:var(--bg)
-}
+html,body{margin:0;height:100%;font-family:Inter;background:var(--bg)}
 
-/* HEADER */
 header{
-  padding:18px 22px;
-  background:linear-gradient(90deg,var(--green),#3f8f5a);
-  color:#fff;
+  background:var(--green);color:#fff;
+  padding:14px 16px;
 }
-.brand{font-family:"Baloo 2";font-size:26px}
-.sub{font-size:13px;opacity:.9}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{
+  width:40px;height:40px;border-radius:10px;
+  background:#fff;color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Baloo 2";font-weight:800
+}
 
-/* MAP */
-#map{height:calc(100vh - 76px)}
-
-/* SEARCH */
-.search-box{
-  position:absolute;
-  top:110px;
-  left:50%;
+.controls{
+  position:absolute;left:50%;bottom:20px;
   transform:translateX(-50%);
-  background:#fff;
-  padding:14px;
-  border-radius:16px;
-  box-shadow:0 12px 30px rgba(0,0,0,.18);
-  display:flex;
-  gap:10px;
-  z-index:1000;
+  background:#fff;border-radius:14px;
+  padding:10px;display:flex;gap:8px;
+  box-shadow:0 6px 20px rgba(0,0,0,.2)
 }
-.search-box input{
-  border:none;
-  outline:none;
-  font-size:16px;
-  padding:10px;
-  width:180px;
-}
-.search-box button{
-  background:var(--green);
-  color:#fff;
-  border:none;
-  border-radius:12px;
-  padding:10px 18px;
-  font-weight:600;
-  cursor:pointer;
-}
+.controls input{padding:8px;border-radius:8px;border:1px solid #ccc;width:120px}
+.controls button{padding:8px 14px;border:none;border-radius:8px;background:var(--green);color:#fff}
 
-/* MOBILE SEARCH */
-@media(max-width:768px){
-  .search-box{
-    top:auto;
-    bottom:90px;
-    width:90%;
-  }
-  .search-box input,
-  .search-box button{
-    width:100%;
-  }
-}
+#map{height:calc(100% - 64px)}
 
-/* MODAL */
-.modal-bg{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:2000;
+.panel{
+  position:absolute;top:80px;left:10px;
+  background:#fff;padding:10px;border-radius:10px;
+  width:220px;font-size:13px
 }
-.modal{
-  background:#fff;
-  width:90%;
-  max-width:360px;
-  padding:18px;
-  border-radius:18px;
-}
-.modal h3{margin-top:0}
-.modal p{font-size:14px;color:#444}
-.modal input{
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-  font-size:16px;
-}
-.modal button{
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:12px;
-  background:var(--green);
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-}
+.panel a{display:block;color:var(--green);text-decoration:none;margin-top:6px}
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="brand">🌿 Khola Pata</div>
-  <div class="sub">West Bengal Rural Land Bank</div>
+  <div class="brand">
+    <div class="logo">KP</div>
+    <div>
+      <b>Khola Pata</b><br>
+      <small>West Bengal Rural Land Bank</small>
+    </div>
+  </div>
 </header>
 
-<!-- SEARCH -->
-<div class="search-box">
-  <input id="pinInput" placeholder="Enter PIN code">
-  <button onclick="openPin()">Explore</button>
-</div>
-
-<!-- MAP -->
 <div id="map"></div>
 
-<!-- MODAL HOLDER -->
-<div id="modalHolder" style="display:none"></div>
+<div class="panel">
+  <b>System Access</b>
+  <a href="dalal-onboard.html">🧑‍🌾 Dalal Registration</a>
+  <a href="admin.html">🛡️ Admin Panel</a>
+  <a href="blockchain.html">🔗 Blockchain Proof</a>
+</div>
+
+<div class="controls">
+  <input id="pin" placeholder="PIN">
+  <button onclick="searchPin()">Explore</button>
+  <button onclick="nearMe()">📍 Near Me</button>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-// ================= LAND DATA =================
-const data = {
-  "700001":[
-    {title:"Premium Roadside Plot",lat:22.5586,lng:88.3621,price:"12 Lakh"},
-    {title:"Residential Plot",lat:22.5532,lng:88.355,price:"6.5 Lakh"}
-  ],
-  "741123":[
-    {title:"Fertile Farm Land",lat:24.2233,lng:87.878,price:"3 Lakh / acre"}
-  ],
-  "721154":[
-    {title:"Residential plot near market",lat:22.4215,lng:87.3221,price:"4.5 Lakh"},
-    {title:"Farm land near canal",lat:22.4182,lng:87.3284,price:"2 Lakh / acre"}
-  ]
-};
-// =============================================
+const lands=[
+ {id:"KP01",title:"Residential Plot",lat:22.4215,lng:87.3221,price:"4.5 Lakh",dalal:"DL001"},
+ {id:"KP02",title:"Farm Land",lat:22.4182,lng:87.3284,price:"2 Lakh/acre",dalal:"DL001"}
+];
 
-// MAP INIT
-const map = L.map("map").setView([23.5,87.5],7);
+const map=L.map("map").setView([22.42,87.32],13);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 let markers=[];
 
-// ENTER KEY SUPPORT
-document.getElementById("pinInput").addEventListener("keyup", function(e){
-  if(e.key === "Enter"){ openPin(); }
-});
+function clearMap(){markers.forEach(m=>map.removeLayer(m));markers=[];}
 
-// OPEN PIN
-function openPin(){
-  map.invalidateSize();
-
-  const pin = document.getElementById("pinInput").value.trim();
-  markers.forEach(m => map.removeLayer(m));
-  markers = [];
-
-  if(!data[pin]){
-    alert("এই PIN-এ এখনো কোনো জমি যোগ করা হয়নি");
-    return;
-  }
-
-  const bounds = [];
-
-  data[pin].forEach(p=>{
-    const m = L.marker([p.lat,p.lng]).addTo(map);
-    m.bindPopup(`
-      <b>${p.title}</b><br>
-      ₹ ${p.price}<br><br>
-      <button onclick="openLogin()">View Details</button>
-    `);
-    markers.push(m);
-    bounds.push([p.lat,p.lng]);
-  });
-
-  setTimeout(()=>{
-    map.fitBounds(bounds,{padding:[60,60]});
-    map.invalidateSize();
-  },200);
+function show(list){
+ clearMap();
+ list.forEach(l=>{
+   const m=L.marker([l.lat,l.lng]).addTo(map);
+   m.bindPopup(`<b>${l.title}</b><br>₹ ${l.price}<br>
+   <button onclick="book('${l.id}')">Contact Local Agent</button>`);
+   markers.push(m);
+ });
 }
 
-// LOGIN MODAL
-function openLogin(){
-  const modal = document.getElementById("modalHolder");
-  modal.style.display="block";
-  modal.innerHTML=`
-    <div class="modal-bg">
-      <div class="modal">
-        <h3>🔐 Login to Continue</h3>
-        <input placeholder="Phone number">
-        <input placeholder="OTP (demo: 1234)">
-        <button onclick="confirmBooking()">Continue</button>
-      </div>
-    </div>
-  `;
+function searchPin(){ show(lands); }
+
+function nearMe(){
+ if(!navigator.geolocation){alert("Location not supported");return;}
+ navigator.geolocation.getCurrentPosition(p=>{
+   const lat=p.coords.latitude,lng=p.coords.longitude;
+   map.setView([lat,lng],14);
+   show(lands); // nearest demo
+ });
 }
 
-// BOOKING
-function confirmBooking(){
-  const modal = document.getElementById("modalHolder");
-  modal.innerHTML=`
-    <div class="modal-bg">
-      <div class="modal">
-        <h3>✅ Booking Initiated</h3>
-        <p>Booking amount: ₹2000</p>
-        <p>Our team will contact you shortly.</p>
-        <button onclick="closeModal()">Done</button>
-      </div>
-    </div>
-  `;
-}
-
-// CLOSE MODAL
-function closeModal(){
-  const modal = document.getElementById("modalHolder");
-  modal.style.display="none";
-  modal.innerHTML="";
+function book(id){
+ alert("Booking recorded.\nAgent & Admin notified.\nBooking ID: "+id);
 }
 </script>
-<footer>
-  <div style="position:absolute;bottom:30px;right:20px;
-background:#fff;padding:10px 14px;border-radius:12px;
-box-shadow:0 8px 20px rgba(0,0,0,.15);font-size:14px">
-  🧑‍🌾 Land owner?  
-  <a href="add-land.html">Add your land</a>
-</div>
-</footer>
-
 </body>
 </html>
