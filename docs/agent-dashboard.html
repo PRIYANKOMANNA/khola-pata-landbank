@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Agent Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Agent Dashboard</div>
+  <a href="index.html">Home</a>
+</header>
+
+<div class="container">
+  <h2>Your Bookings</h2>
+  <div id="bookings">Loading…</div>
+</div>
+
+<script>
+const API_URL = 'https://PLACEHOLDER_BACKEND/api';
+const token = localStorage.token;
+if (!token) location.href = 'login.html';
+
+async function load() {
+  const res = await fetch(`${API_URL}/bookings/my`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+
+  document.getElementById('bookings').innerHTML =
+    data.map(b => `
+      <div class="card">
+        <h3>${b.land?.title}</h3>
+        <p>Buyer: <b>${b.buyer?.name}</b></p>
+        <span class="badge">${b.status}</span>
+      </div>
+    `).join('');
+}
+load();
+</script>
+
+</body>
+</html>
