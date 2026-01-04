@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Admin Panel</div>
+  <a href="index.html">Home</a>
+</header>
+
+<div class="container">
+  <h2>Platform Overview</h2>
+  <div id="stats" class="card">Loading…</div>
+</div>
+
+<script>
+const API_URL = 'https://PLACEHOLDER_BACKEND/api';
+const token = localStorage.token;
+if (!token) location.href = 'login.html';
+
+async function load() {
+  const res = await fetch(`${API_URL}/admin/stats`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const s = await res.json();
+
+  document.getElementById('stats').innerHTML = `
+    <p>Total Users: <b>${s.totalUsers}</b></p>
+    <p>Total Lands: <b>${s.totalLands}</b></p>
+    <p>Total Bookings: <b>${s.totalBookings}</b></p>
+  `;
+}
+load();
+</script>
+
+</body>
+</html>
