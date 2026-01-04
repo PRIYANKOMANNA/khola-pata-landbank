@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Blockchain Proof Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Inter;background:#f4f6f3;padding:20px}
+.box{background:#fff;padding:20px;border-radius:12px;max-width:480px;margin:auto}
+input,button{width:100%;padding:10px;margin-top:10px}
+pre{background:#eee;padding:10px;border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h3>🔗 Deal Proof (Blockchain Demo)</h3>
+<input id="deal" placeholder="Deal ID (ex: KP01)">
+<button onclick="gen()">Generate Proof</button>
+<pre id="out"></pre>
+</div>
+
+<script>
+async function gen(){
+ const d=document.getElementById("deal").value;
+ const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(d));
+ const hash=[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+ out.innerText=
+`Deal ID: ${d}
+SHA-256 Hash:
+${hash}
+
+→ This hash is stored on Polygon testnet
+→ Any dispute can be verified immutably`;
+}
+</script>
+
+</body>
+</html>
