@@ -2,114 +2,184 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Khola Pata | Rural Land Exchange</title>
+<title>Khola Pata | Rural Land Bank</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Inter&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-:root{--green:#2e7d32;--bg:#f7f7f4}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:Inter;background:var(--bg)}
+html,body{margin:0;height:100%;font-family:Inter;background:#f4f6f3}
 
+/* TOP BAR */
 header{
-  background:var(--green);color:#fff;
-  padding:14px 16px;
-}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{
-  width:40px;height:40px;border-radius:10px;
-  background:#fff;color:var(--green);
-  display:flex;align-items:center;justify-content:center;
-  font-family:"Baloo 2";font-weight:800
+  height:56px;
+  background:#2e7d32;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  font-weight:600;
 }
 
-.controls{
-  position:absolute;left:50%;bottom:20px;
+/* MAP */
+#map{
+  height:calc(100% - 56px);
+  width:100%;
+}
+
+/* BOTTOM SEARCH */
+.search-box{
+  position:fixed;
+  bottom:14px;
+  left:50%;
   transform:translateX(-50%);
-  background:#fff;border-radius:14px;
-  padding:10px;display:flex;gap:8px;
-  box-shadow:0 6px 20px rgba(0,0,0,.2)
+  background:#fff;
+  width:92%;
+  border-radius:16px;
+  padding:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
-.controls input{padding:8px;border-radius:8px;border:1px solid #ccc;width:120px}
-.controls button{padding:8px 14px;border:none;border-radius:8px;background:var(--green);color:#fff}
 
-#map{height:calc(100% - 64px)}
-
-.panel{
-  position:absolute;top:80px;left:10px;
-  background:#fff;padding:10px;border-radius:10px;
-  width:220px;font-size:13px
+.search-box button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#2e7d32;
+  color:#fff;
+  font-size:16px;
+  font-weight:600;
 }
-.panel a{display:block;color:var(--green);text-decoration:none;margin-top:6px}
+
+.search-box input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+/* LAND LIST DRAWER */
+.drawer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  max-height:45%;
+  background:#fff;
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -6px 20px rgba(0,0,0,.2);
+  padding:12px;
+  overflow:auto;
+  display:none;
+}
+
+.card{
+  padding:12px;
+  border-radius:12px;
+  background:#f9f9f9;
+  margin-bottom:10px;
+}
+.card button{
+  margin-top:8px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#2e7d32;
+  color:#fff;
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="brand">
-    <div class="logo">KP</div>
-    <div>
-      <b>Khola Pata</b><br>
-      <small>West Bengal Rural Land Bank</small>
-    </div>
-  </div>
+  Khola Pata • West Bengal Rural Land Bank
 </header>
 
 <div id="map"></div>
 
-<div class="panel">
-  <b>System Access</b>
-  <a href="dalal-onboard.html">🧑‍🌾 Dalal Registration</a>
-  <a href="admin.html">🛡️ Admin Panel</a>
-  <a href="blockchain.html">🔗 Blockchain Proof</a>
+<!-- Bottom Search -->
+<div class="search-box">
+  <button onclick="nearMe()">📍 Show Land Near Me</button>
+  <input id="pin" placeholder="Or enter PIN code">
 </div>
 
-<div class="controls">
-  <input id="pin" placeholder="PIN">
-  <button onclick="searchPin()">Explore</button>
-  <button onclick="nearMe()">📍 Near Me</button>
-</div>
+<!-- Drawer -->
+<div id="drawer" class="drawer"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
 const lands=[
- {id:"KP01",title:"Residential Plot",lat:22.4215,lng:87.3221,price:"4.5 Lakh",dalal:"DL001"},
- {id:"KP02",title:"Farm Land",lat:22.4182,lng:87.3284,price:"2 Lakh/acre",dalal:"DL001"}
+ {id:"KP01",title:"Residential Plot",lat:22.4215,lng:87.3221,price:"₹4.5 Lakh"},
+ {id:"KP02",title:"Farm Land",lat:22.4182,lng:87.3284,price:"₹2 Lakh/acre"}
 ];
 
 const map=L.map("map").setView([22.42,87.32],13);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
 let markers=[];
 
-function clearMap(){markers.forEach(m=>map.removeLayer(m));markers=[];}
-
-function show(list){
- clearMap();
- list.forEach(l=>{
-   const m=L.marker([l.lat,l.lng]).addTo(map);
-   m.bindPopup(`<b>${l.title}</b><br>₹ ${l.price}<br>
-   <button onclick="book('${l.id}')">Contact Local Agent</button>`);
-   markers.push(m);
- });
+function clearMap(){
+ markers.forEach(m=>map.removeLayer(m));
+ markers=[];
 }
-
-function searchPin(){ show(lands); }
 
 function nearMe(){
- if(!navigator.geolocation){alert("Location not supported");return;}
- navigator.geolocation.getCurrentPosition(p=>{
-   const lat=p.coords.latitude,lng=p.coords.longitude;
+ if(!navigator.geolocation){
+   alert("Location not supported");
+   return;
+ }
+
+ document.getElementById("drawer").style.display="block";
+ document.getElementById("drawer").innerHTML="<p>📍 Finding nearby land…</p>";
+
+ navigator.geolocation.getCurrentPosition(pos=>{
+   const lat=pos.coords.latitude;
+   const lng=pos.coords.longitude;
    map.setView([lat,lng],14);
-   show(lands); // nearest demo
+   showLands();
  });
 }
 
-function book(id){
- alert("Booking recorded.\nAgent & Admin notified.\nBooking ID: "+id);
+function showLands(){
+ clearMap();
+ const drawer=document.getElementById("drawer");
+ drawer.innerHTML="";
+
+ lands.forEach(l=>{
+   const m=L.marker([l.lat,l.lng]).addTo(map);
+   markers.push(m);
+
+   drawer.innerHTML+=`
+    <div class="card">
+      <b>${l.title}</b><br>
+      ${l.price}<br>
+      <button onclick="contact('${l.id}')">
+        Contact Local Agent
+      </button>
+    </div>`;
+ });
+
+ if(!lands.length){
+   drawer.innerHTML="<p>No land available nearby.</p>";
+ }
+}
+
+function contact(id){
+ alert(
+  "Booking initiated\n"+
+  "Local agent will contact you.\n"+
+  "Booking ID: "+id
+ );
 }
 </script>
+
 </body>
 </html>
