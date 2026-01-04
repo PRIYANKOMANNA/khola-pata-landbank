@@ -1,216 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Khola Pata | West Bengal Rural Land Bank</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-<style>
-*{box-sizing:border-box}
-html,body{
-  margin:0;height:100%;
-  font-family:Inter,sans-serif;
-  background:#f4f6f3;
-}
-
-/* TOP BAR */
-header{
-  height:56px;
-  background:#2e7d32;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  padding:0 14px;
-  font-weight:600;
-}
-
-/* MAP */
-#map{
-  height:calc(100% - 56px - 140px);
-  width:100%;
-}
-
-/* BOTTOM PANEL */
-.bottom{
-  height:140px;
-  background:#fff;
-  border-top:1px solid #ddd;
-  padding:12px;
-}
-
-.bottom button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#2e7d32;
-  color:#fff;
-  font-size:16px;
-  font-weight:600;
-}
-
-.bottom input{
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-
-.links{
-  display:flex;
-  justify-content:space-around;
-  margin-top:8px;
-  font-size:13px;
-}
-.links a{
-  color:#2e7d32;
-  text-decoration:none;
-  font-weight:600;
-}
-
-/* LAND LIST */
-#list{
-  position:fixed;
-  top:56px;
-  right:0;
-  width:100%;
-  max-height:40%;
-  background:#fff;
-  border-bottom:1px solid #ddd;
-  overflow:auto;
-  display:none;
-  z-index:999;
-}
-
-.card{
-  padding:12px;
-  border-bottom:1px solid #eee;
-}
-.card button{
-  margin-top:6px;
-  padding:8px;
-  width:100%;
-  background:#2e7d32;
-  color:#fff;
-  border:none;
-  border-radius:6px;
-}
-</style>
+<title>Khola Pata | Rural Land Bank</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <header>
-  Khola Pata • West Bengal Rural Land Bank
+  <div class="logo">🏡 Khola Pata</div>
+  <a href="login.html">Login</a>
 </header>
 
-<div id="list"></div>
-<div id="map"></div>
+<div class="container">
+  <h2>Available Land Parcels</h2>
+  <p>Verified rural land opportunities across West Bengal.</p>
 
-<div class="bottom">
-  <button onclick="nearMe()">📍 Show Land Near Me</button>
-  <input id="pin" placeholder="Or enter PIN and press Enter">
-  <div class="links">
-    <a href="dalal-onboard.html">Dalal</a>
-    <a href="admin.html">Admin</a>
-    <a href="blockchain.html">Blockchain</a>
-  </div>
+  <div id="lands">Loading land data…</div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-/* DATA */
-const LANDS=[
- {id:"KP01",pin:"721154",title:"Residential Plot",lat:22.4215,lng:87.3221,price:"₹4.5 Lakh"},
- {id:"KP02",pin:"721154",title:"Farm Land",lat:22.4182,lng:87.3284,price:"₹2 Lakh/acre"}
-];
+const API_URL = 'https://PLACEHOLDER_BACKEND/api';
 
-/* MAP */
-const map=L.map("map").setView([22.42,87.32],13);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-let markers=[];
+async function loadLands() {
+  try {
+    const res = await fetch(`${API_URL}/lands`);
+    const lands = await res.json();
+    const el = document.getElementById('lands');
 
-function clearMap(){
-  markers.forEach(m=>map.removeLayer(m));
-  markers=[];
-}
+    if (!lands.length) {
+      el.innerHTML = '<p>No land available</p>';
+      return;
+    }
 
-/* DISTANCE */
-function dist(a,b,c,d){
-  const R=6371;
-  const dLat=(c-a)*Math.PI/180;
-  const dLon=(d-b)*Math.PI/180;
-  const x=Math.sin(dLat/2)**2+
-          Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*
-          Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
-}
-
-/* RENDER */
-function render(list){
-  clearMap();
-  const panel=document.getElementById("list");
-  panel.innerHTML="";
-  panel.style.display="block";
-
-  if(!list.length){
-    panel.innerHTML="<p style='padding:12px'>No land found.</p>";
-    return;
-  }
-
-  list.forEach(l=>{
-    const m=L.marker([l.lat,l.lng]).addTo(map);
-    markers.push(m);
-
-    panel.innerHTML+=`
+    el.innerHTML = lands.map(l => `
       <div class="card">
-        <b>${l.title}</b><br>
-        ${l.price}<br>
-        <button onclick="book('${l.id}')">
-          Contact Local Agent
-        </button>
-      </div>`;
-  });
-}
-
-/* NEAR ME */
-function nearMe(){
-  if(!navigator.geolocation){
-    alert("Location not supported");
-    return;
+        <h3>${l.title}</h3>
+        <span class="badge">${l.type}</span>
+        <p>${l.address}</p>
+        <h3>₹ ${l.price} Lakh</h3>
+        <button class="btn btn-primary" onclick="book()">Book Site Visit</button>
+      </div>
+    `).join('');
+  } catch {
+    document.getElementById('lands').innerText =
+      'Backend not connected yet';
   }
-  navigator.geolocation.getCurrentPosition(p=>{
-    const lat=p.coords.latitude;
-    const lng=p.coords.longitude;
-    map.setView([lat,lng],14);
-    const nearby=LANDS.filter(l=>dist(lat,lng,l.lat,l.lng)<=10);
-    render(nearby.length?nearby:LANDS);
-  },()=>{
-    alert("Please allow location access");
-  });
 }
 
-/* PIN SEARCH */
-document.getElementById("pin").addEventListener("keypress",e=>{
-  if(e.key==="Enter"){
-    const v=e.target.value.trim();
-    render(LANDS.filter(l=>l.pin===v));
-  }
-});
-
-/* BOOK */
-function book(id){
-  alert(
-    "Booking initiated\n"+
-    "Local agent will contact you\n"+
-    "Booking ID: "+id
-  );
+function book() {
+  alert('Please login to book a visit');
+  location.href = 'login.html';
 }
+
+loadLands();
 </script>
 
 </body>
