@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Inter;background:#f4f6f3;padding:20px}
+.card{background:#fff;padding:14px;border-radius:10px;margin-bottom:10px}
+button{padding:6px 10px;margin-right:6px}
+</style>
+</head>
+<body>
+
+<h2>🛡️ Admin Dashboard</h2>
+
+<div class="card">
+<b>Deal ID:</b> KP01<br>
+Buyer: OTP Verified<br>
+Dalal: DL001<br>
+Commission: ₹800 + ₹800<br><br>
+<button onclick="approve()">Approve Deal</button>
+<button onclick="reject()">Reject</button>
+</div>
+
+<script>
+function approve(){
+ alert("Deal Approved.\nCommission locked.\nBlockchain hash generated.");
+}
+function reject(){
+ alert("Deal Rejected.");
+}
+</script>
+
+</body>
+</html>
