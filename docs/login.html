@@ -3,79 +3,66 @@
 <head>
 <title>Login | Khola Pata</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="style.css">
+<style>
+body{font-family:Inter,sans-serif;background:#f4f6f3}
+.container{max-width:420px;margin:60px auto}
+.card{background:#fff;padding:20px;border-radius:12px}
+input,select,button{
+  width:100%;padding:12px;margin-top:10px;
+}
+button{background:#2e7d32;color:#fff;border:none;border-radius:8px}
+</style>
 </head>
 <body>
 
-<div class="container" style="max-width:420px;margin-top:60px">
+<div class="container">
   <div class="card">
-    <h2>Login</h2>
+    <h2>Login / Register</h2>
 
-    <input id="user" placeholder="Email or Phone">
-    <input id="pass" type="password" placeholder="Password">
-    <button class="btn btn-primary" onclick="login()">Login</button>
-
-    <hr style="margin:20px 0">
-
-    <h3>Create Account</h3>
-    <input id="name" placeholder="Full Name">
-    <input id="email" placeholder="Email">
-    <input id="phone" placeholder="Phone">
-    <input id="rpass" type="password" placeholder="Password">
+    <input id="name" placeholder="Your Name">
+    <input id="phone" placeholder="Mobile Number">
 
     <select id="role">
       <option value="buyer">Buyer</option>
-      <option value="agent">Agent</option>
+      <option value="agent">Local Agent (Dalal)</option>
     </select>
 
-    <button class="btn btn-outline" onclick="register()">Register</button>
+    <button onclick="login()">Continue</button>
+
+    <p style="font-size:12px;color:#555;margin-top:12px">
+      No password required. Demo mode.
+    </p>
   </div>
 </div>
 
 <script>
-const API_URL = 'https://PLACEHOLDER_BACKEND/api';
+function login(){
+  const user={
+    name: name.value,
+    phone: phone.value,
+    role: role.value,
+    time: new Date().toISOString()
+  };
 
-async function login() {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      emailOrPhone: user.value,
-      password: pass.value
-    })
-  });
-  const data = await res.json();
-  if (!res.ok) return alert(data.error);
+  if(!user.name || !user.phone){
+    alert("Please enter name and phone");
+    return;
+  }
 
-  localStorage.token = data.token;
-  localStorage.role = data.user.role;
-  route();
-}
+  // Save session
+  localStorage.setItem("kp_user",JSON.stringify(user));
 
-async function register() {
-  const res = await fetch(`${API_URL}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name: name.value,
-      email: email.value,
-      phone: phone.value,
-      password: rpass.value,
-      role: role.value
-    })
-  });
-  const data = await res.json();
-  if (!res.ok) return alert(data.error);
+  // Log data (THIS IS IMPORTANT)
+  let logs=JSON.parse(localStorage.getItem("kp_logins")||"[]");
+  logs.push(user);
+  localStorage.setItem("kp_logins",JSON.stringify(logs));
 
-  localStorage.token = data.token;
-  localStorage.role = data.user.role;
-  route();
-}
-
-function route() {
-  if (localStorage.role === 'admin') location.href = 'admin.html';
-  else if (localStorage.role === 'agent') location.href = 'agent-dashboard.html';
-  else location.href = 'index.html';
+  // Route
+  if(user.role==="agent"){
+    location.href="agent-dashboard.html";
+  }else{
+    location.href="index.html";
+  }
 }
 </script>
 
