@@ -2,15 +2,28 @@
 <html>
 <head>
 <title>Khola Pata | Live Land Map</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
 <style>
-body,html{margin:0;height:100%;font-family:system-ui;background:#f4f6f4}
+html,body{margin:0;height:100%;font-family:system-ui;background:#f4f6f4}
 header{background:#2e7d32;color:#fff;padding:14px;font-weight:700}
 #map{height:70vh}
 .panel{padding:12px}
-.card{background:#fff;padding:10px;margin:8px 0;border-radius:10px}
-button{padding:8px 12px;background:#2e7d32;color:#fff;border:none;border-radius:8px}
+.card{background:#fff;padding:12px;margin:10px 0;border-radius:12px}
+button{
+ background:#2e7d32;color:#fff;border:none;
+ padding:10px 14px;border-radius:10px;
+ width:100%;font-size:15px
+}
+.gallery{
+ display:flex;gap:8px;overflow-x:auto
+}
+.gallery img{
+ width:120px;height:90px;object-fit:cover;
+ border-radius:8px
+}
 </style>
 </head>
 
@@ -18,123 +31,74 @@ button{padding:8px 12px;background:#2e7d32;color:#fff;border:none;border-radius:
 
 <header>🌿 Khola Pata – Kolaghat Live Lands</header>
 <div id="map"></div>
-
 <div class="panel" id="list"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+const WHATSAPP_NUMBER = "918967744210"; // 🔴 change this
+
 const LAND_DATA = [
  {
   id:1,
   title:"Residential Plot near Highway",
-  lat:22.435133,
-  lng:87.833951,
-  pin:"721154",
+  lat:22.435133,lng:87.833951,
   price:"₹4.5 Lakh",
-  photo:"PHOTO_1_LINK"
+  photos:[
+   "PHOTO1_URL","PHOTO2_URL"
+  ]
  },
  {
   id:2,
   title:"Green Farm Land",
-  lat:22.436027,
-  lng:87.837703,
-  pin:"721154",
+  lat:22.436027,lng:87.837703,
   price:"₹2 Lakh / Acre",
-  photo:"PHOTO_2_LINK"
+  photos:[
+   "PHOTO3_URL","PHOTO4_URL"
+  ]
  },
  {
   id:3,
   title:"Village Roadside Plot",
-  lat:22.435755,
-  lng:87.837767,
-  pin:"721154",
+  lat:22.435755,lng:87.837767,
   price:"₹3.8 Lakh",
-  photo:"PHOTO_3_LINK"
- },
- {
-  id:4,
-  title:"Bamboo Area Land",
-  lat:22.437286,
-  lng:87.843296,
-  pin:"721134",
-  price:"₹1.9 Lakh",
-  photo:"PHOTO_4_LINK"
- },
- {
-  id:5,
-  title:"Canal Side Land",
-  lat:22.437286,
-  lng:87.843300,
-  pin:"721134",
-  price:"₹2.2 Lakh",
-  photo:"PHOTO_5_LINK"
- },
- {
-  id:6,
-  title:"Interior Green Plot",
-  lat:22.437282,
-  lng:87.843308,
-  pin:"721134",
-  price:"₹1.7 Lakh",
-  photo:"PHOTO_6_LINK"
- },
- {
-  id:7,
-  title:"Palm Tree Area Land",
-  lat:22.436736,
-  lng:87.843542,
-  pin:"721134",
-  price:"₹2.6 Lakh",
-  photo:"PHOTO_7_LINK"
- },
- {
-  id:8,
-  title:"Forest Edge Plot",
-  lat:22.436683,
-  lng:87.843245,
-  pin:"721134",
-  price:"₹2.1 Lakh",
-  photo:"PHOTO_8_LINK"
- },
- {
-  id:9,
-  title:"Village Expansion Zone",
-  lat:22.436677,
-  lng:87.843236,
-  pin:"721134",
-  price:"₹2.9 Lakh",
-  photo:"PHOTO_9_LINK"
- },
- {
-  id:10,
-  title:"Future Residential Land",
-  lat:22.436679,
-  lng:87.843218,
-  pin:"721134",
-  price:"₹3.2 Lakh",
-  photo:"PHOTO_10_LINK"
+  photos:[
+   "PHOTO5_URL","PHOTO6_URL"
+  ]
  }
+ // 👉 baki land gulo same pattern e add করবে
 ];
 
 const map = L.map("map").setView([22.4369,87.8400],15);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
 LAND_DATA.forEach(l=>{
- const m = L.marker([l.lat,l.lng]).addTo(map);
- m.bindPopup(`
+ const gallery = l.photos.map(p=>`<img src="${p}">`).join("");
+ const message = encodeURIComponent(
+  `Interested in Land ID ${l.id}\n${l.title}\nPrice: ${l.price}`
+ );
+ const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+
+ const popupHTML = `
   <b>${l.title}</b><br>
-  ${l.price}<br>
-  PIN: ${l.pin}<br>
-  <a href="${l.photo}" target="_blank">View Photo</a>
- `);
+  ${l.price}<br><br>
+  <div class="gallery">${gallery}</div><br>
+  <a href="${waLink}" target="_blank">
+   <button>📲 Contact via WhatsApp</button>
+  </a>
+ `;
+
+ L.marker([l.lat,l.lng]).addTo(map).bindPopup(popupHTML);
 
  document.getElementById("list").innerHTML += `
   <div class="card">
-    <b>${l.title}</b><br>
-    ${l.price}<br>
-    <button onclick="alert('Contact via Khola Pata')">Contact</button>
-  </div>`;
+   <b>${l.title}</b><br>
+   ${l.price}<br><br>
+   <a href="${waLink}" target="_blank">
+    <button>Contact via WhatsApp</button>
+   </a>
+  </div>
+ `;
 });
 </script>
 
