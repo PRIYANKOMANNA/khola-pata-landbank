@@ -1,69 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>Login | Khola Pata</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{font-family:Inter,sans-serif;background:#f4f6f3}
-.container{max-width:420px;margin:60px auto}
-.card{background:#fff;padding:20px;border-radius:12px}
-input,select,button{
-  width:100%;padding:12px;margin-top:10px;
+body{
+  font-family:Inter,sans-serif;
+  background:#f4f6f3;
+  margin:0;
 }
-button{background:#2e7d32;color:#fff;border:none;border-radius:8px}
+.container{
+  max-width:420px;
+  margin:60px auto;
+  padding:16px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+}
+input,select,button{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  font-size:16px;
+}
+button{
+  background:#2e7d32;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+}
+.note{
+  font-size:12px;
+  color:#555;
+  margin-top:10px;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container">
   <div class="card">
     <h2>Login / Register</h2>
 
-    <input id="name" placeholder="Your Name">
-    <input id="phone" placeholder="Mobile Number">
+    <input id="kp_name" type="text" placeholder="Your Name" autocomplete="name">
 
-    <select id="role">
+    <input id="kp_phone" type="tel" placeholder="Mobile Number"
+           inputmode="numeric" autocomplete="tel">
+
+    <select id="kp_role">
+      <option value="">Select Role</option>
       <option value="buyer">Buyer</option>
-      <option value="agent">Local Agent (Dalal)</option>
+      <option value="agent">Local Agent</option>
     </select>
 
-    <button onclick="login()">Continue</button>
+    <button id="kp_continue">Continue</button>
 
-    <p style="font-size:12px;color:#555;margin-top:12px">
+    <div class="note">
       No password required. Demo mode.
-    </p>
+    </div>
   </div>
 </div>
 
 <script>
-function login(){
-  const user={
-    name: name.value,
-    phone: phone.value,
-    role: role.value,
-    time: new Date().toISOString()
-  };
+// cache-buster
+console.log("Login JS loaded v3");
 
-  if(!user.name || !user.phone){
-    alert("Please enter name and phone");
+document.getElementById("kp_continue").addEventListener("click",function(){
+
+  const name = document.getElementById("kp_name").value.trim();
+  const phone = document.getElementById("kp_phone").value.trim();
+  const role  = document.getElementById("kp_role").value;
+
+  if(name.length < 2){
+    alert("Enter your name");
     return;
   }
 
-  // Save session
-  localStorage.setItem("kp_user",JSON.stringify(user));
-
-  // Log data (THIS IS IMPORTANT)
-  let logs=JSON.parse(localStorage.getItem("kp_logins")||"[]");
-  logs.push(user);
-  localStorage.setItem("kp_logins",JSON.stringify(logs));
-
-  // Route
-  if(user.role==="agent"){
-    location.href="agent-dashboard.html";
-  }else{
-    location.href="index.html";
+  if(phone.length < 8){
+    alert("Enter valid phone number");
+    return;
   }
-}
+
+  if(!role){
+    alert("Select role");
+    return;
+  }
+
+  const user = {
+    name,
+    phone,
+    role,
+    time: new Date().toISOString()
+  };
+
+  // save session
+  localStorage.setItem("kp_user", JSON.stringify(user));
+
+  // analytics log
+  const logs = JSON.parse(localStorage.getItem("kp_logins") || "[]");
+  logs.push(user);
+  localStorage.setItem("kp_logins", JSON.stringify(logs));
+
+  // redirect
+  if(role === "buyer"){
+    location.href = "buyer-dashboard.html";
+  }else{
+    location.href = "agent-dashboard.html";
+  }
+
+});
 </script>
 
 </body>
